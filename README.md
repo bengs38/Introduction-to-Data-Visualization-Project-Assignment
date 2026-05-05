@@ -139,13 +139,28 @@ http://localhost:5173
 
 ## F8 ile Hizli Baslatma
 
-Windows icin eklenen baslatici script:
+Windows icin eklenen baslatici scripti kullanmadan once proje ana klasorunde gerekli Python paketlerini kurun:
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+Ardindan yine proje ana klasorundeyken baslaticiyi calistirin:
 
 ```powershell
 py start_with_f8.py
 ```
 
-Script calisirken `F8` tusuna basildiginda backend ve frontend baslatilir, ardindan tarayici `http://localhost:5173` adresinde acilir.
+Terminalde `Uygulamayi baslatmak icin F8 tusuna basin` yazisini gordukten sonra klavyeden `F8` tusuna basin.
+
+F8'e basildiginda script:
+
+1. Backend calismiyorsa baslatir.
+2. Frontend calismiyorsa baslatir.
+3. 5 saniye bekler.
+4. Tarayicida `http://localhost:5173` adresini acar.
+
+Windows'ta F8 tusu algilanmazsa VS Code'u yonetici olarak calistirmak gerekebilir.
 
 ## Ornek Veri
 
