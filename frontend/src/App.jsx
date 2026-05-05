@@ -1,9 +1,14 @@
 import { Activity, BarChart3, Database, MessageSquare, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AIReport from "./components/AIReport.jsx";
+import AnomalyTable from "./components/AnomalyTable.jsx";
+import ChartSuggestion from "./components/ChartSuggestion.jsx";
+import ChartAIComment from "./components/ChartAIComment.jsx";
 import ChatBox from "./components/ChatBox.jsx";
 import DashboardCharts from "./components/DashboardCharts.jsx";
 import DataTable from "./components/DataTable.jsx";
+import DataCleaning from "./components/DataCleaning.jsx";
+import DataQuality from "./components/DataQuality.jsx";
 import FileUpload from "./components/FileUpload.jsx";
 import SummaryCards from "./components/SummaryCards.jsx";
 import { api, getErrorMessage } from "./utils/api.js";
@@ -16,10 +21,13 @@ export default function App() {
   const [xColumn, setXColumn] = useState("");
   const [yColumn, setYColumn] = useState("");
   const [chartData, setChartData] = useState(null);
+  const [chartSuggestion, setChartSuggestion] = useState(null);
   const [model, setModel] = useState("llama3");
   const [report, setReport] = useState("");
+  const [chartComment, setChartComment] = useState("");
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState({ upload: false, chart: false, report: false, chat: false });
+  const [cleaningResult, setCleaningResult] = useState(null);
+  const [loading, setLoading] = useState({ upload: false, chart: false, report: false, chat: false, clean: false, chartComment: false });
   const [error, setError] = useState("");
 
   const numericColumns = useMemo(() => analysis?.sayisal_sutunlar || [], [analysis]);
@@ -38,6 +46,14 @@ export default function App() {
 
   const setBusy = (key, value) => setLoading((current) => ({ ...current, [key]: value }));
 
+  const warmupModel = async (selectedModel = model) => {
+    try {
+      await api.post("/warmup", { model: selectedModel });
+    } catch {
+      // Isinma istegi opsiyoneldir; Ollama kapaliysa asil AI isteginde hata gosterilir.
+    }
+  };
+
   const uploadFile = async (file) => {
     setError("");
     setBusy("upload", true);
@@ -49,13 +65,17 @@ export default function App() {
       setRows(response.data.preview);
       setAnalysis(response.data.analysis);
       setReport("");
+      setChartComment("");
       setMessages([]);
+      setCleaningResult(null);
       setChartData(null);
       const firstX = response.data.analysis.sutunlar?.[0] || "";
       const firstY = response.data.analysis.sayisal_sutunlar?.[0] || "";
       setXColumn(firstX);
       setYColumn(firstY);
       await refreshChart("bar", firstX, firstY);
+      await fetchChartSuggestion();
+      warmupModel(model);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -64,7 +84,7 @@ export default function App() {
   };
 
   const refreshChart = async (type = chartType, x = xColumn, y = yColumn) => {
-    if (!analysis) return;
+    if (!analysis && !x) return;
     setError("");
     setBusy("chart", true);
     try {
@@ -79,16 +99,113 @@ export default function App() {
     }
   };
 
+  const fetchChartSuggestion = async () => {
+    try {
+      const response = await api.get("/suggest-chart");
+      setChartSuggestion(response.data);
+    } catch {
+      setChartSuggestion(null);
+    }
+  };
+
+  const cleanData = async (strategy) => {
+    setError("");
+    setBusy("clean", true);
+    try {
+      const response = await api.post("/clean", { strategy });
+      setRows(response.data.preview);
+      setAnalysis(response.data.analysis);
+      setCleaningResult(response.data.cleaning);
+      setChartSuggestion(response.data.suggestion);
+      setReport("");
+      setChartComment("");
+      setMessages([]);
+      const nextX = response.data.suggestion?.x_column || response.data.analysis.sutunlar?.[0] || "";
+      const nextY = response.data.suggestion?.y_column || response.data.analysis.sayisal_sutunlar?.[0] || "";
+      const nextType = response.data.suggestion?.chart_type || chartType;
+      setChartType(nextType);
+      setXColumn(nextX);
+      setYColumn(nextY);
+      await refreshChart(nextType, nextX, nextY);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy("clean", false);
+    }
+  };
+
+  const applyChartSuggestion = async (suggestion) => {
+    const nextType = suggestion.chart_type || "bar";
+    const nextX = suggestion.x_column || "";
+    const nextY = suggestion.y_column || "";
+    setChartType(nextType);
+    setXColumn(nextX);
+    setYColumn(nextY);
+    await refreshChart(nextType, nextX, nextY);
+  };
+
+  const downloadReportPdf = () => {
+    if (!report) return;
+    const safeReport = report
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    const reportWindow = window.open("", "_blank", "width=900,height=700");
+    if (!reportWindow) {
+      setError("PDF penceresi acilamadi. Tarayici popup iznini kontrol edin.");
+      return;
+    }
+    reportWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>AI Veri Analiz Raporu</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #172033; padding: 32px; line-height: 1.6; }
+            h1 { color: #0f766e; margin-bottom: 4px; }
+            .meta { color: #64748b; margin-bottom: 24px; }
+            pre { white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 13px; }
+          </style>
+        </head>
+        <body>
+          <h1>Akilli Veri Analiz Asistani</h1>
+          <div class="meta">Dosya: ${filename || "Veri seti"} | Model: ${model}</div>
+          <pre>${safeReport}</pre>
+          <script>window.onload = () => window.print();</script>
+        </body>
+      </html>
+    `);
+    reportWindow.document.close();
+  };
+
   const createReport = async () => {
     setError("");
     setBusy("report", true);
     try {
-      const response = await api.post("/report", { model });
+      const response = await api.post("/report", { model }, { timeout: 650000 });
       setReport(response.data.report);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setBusy("report", false);
+    }
+  };
+
+  const createChartComment = async () => {
+    setError("");
+    setBusy("chartComment", true);
+    try {
+      const response = await api.post("/chart-comment", {
+        chart_type: chartType,
+        x_column: xColumn || null,
+        y_column: yColumn || null,
+        model,
+      });
+      setChartComment(response.data.comment);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy("chartComment", false);
     }
   };
 
@@ -147,6 +264,7 @@ export default function App() {
               <input
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
+                onBlur={() => warmupModel(model)}
                 className="w-36 rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100"
                 aria-label="Ollama model adı"
               />
@@ -159,6 +277,16 @@ export default function App() {
 
           <FileUpload onUpload={uploadFile} loading={loading.upload} filename={filename} />
           <SummaryCards analysis={analysis} />
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.65fr)]">
+            <DataCleaning analysis={analysis} onClean={cleanData} loading={loading.clean} result={cleaningResult} disabled={!analysis} />
+            <ChartSuggestion suggestion={chartSuggestion} onApply={applyChartSuggestion} disabled={!analysis || loading.chart} />
+          </div>
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(360px,0.65fr)_minmax(0,1fr)]">
+            <DataQuality analysis={analysis} />
+            <AnomalyTable analysis={analysis} />
+          </div>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
             <DashboardCharts
@@ -173,8 +301,10 @@ export default function App() {
               onRefresh={() => refreshChart()}
               loading={loading.chart}
             />
-            <AIReport report={report} onCreate={createReport} loading={loading.report} />
+            <AIReport report={report} onCreate={createReport} onDownloadPdf={downloadReportPdf} loading={loading.report} />
           </div>
+
+          <ChartAIComment comment={chartComment} onCreate={createChartComment} loading={loading.chartComment} disabled={!analysis || !chartData} />
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
             <DataTable rows={rows} />

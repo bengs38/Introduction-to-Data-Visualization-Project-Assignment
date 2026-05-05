@@ -6,9 +6,9 @@ export default function DataTable({ rows }) {
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-ink">Veri Tablosu</h2>
-          <p className="mt-1 text-sm text-slate-600">İlk 100 kayıt gösterilir.</p>
+          <p className="mt-1 text-sm text-slate-600">Ilk 500 kayit gosterilir.</p>
         </div>
-        <span className="rounded-md border border-line px-3 py-1 text-sm text-slate-600">{rows?.length || 0} kayıt</span>
+        <span className="rounded-md border border-line px-3 py-1 text-sm text-slate-600">{rows?.length || 0} kayit</span>
       </div>
       <div className="scrollbar-thin max-h-[420px] overflow-auto rounded-md border border-line">
         <table className="min-w-full border-collapse text-left text-sm">
@@ -27,14 +27,14 @@ export default function DataTable({ rows }) {
                 <tr key={index} className="odd:bg-white even:bg-slate-50">
                   {columns.map((column) => (
                     <td key={column} className="whitespace-nowrap border-b border-slate-100 px-3 py-2 text-slate-700">
-                      {row[column] === null || row[column] === undefined ? "—" : String(row[column])}
+                      {row[column] === null || row[column] === undefined ? "-" : String(row[column])}
                     </td>
                   ))}
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="px-3 py-8 text-center text-slate-500">Henüz veri yüklenmedi.</td>
+                <td className="px-3 py-8 text-center text-slate-500">Henuz veri yuklenmedi.</td>
               </tr>
             )}
           </tbody>

@@ -15,7 +15,13 @@ Kullanici bir veri dosyasi yukler. Backend dosyayi pandas ile analiz eder, front
 - Bar, line, pie, scatter grafikler
 - Korelasyon heatmap
 - Grafik icin kullanici kontrollu sutun secimi
+- Otomatik grafik onerisi
+- Veri temizleme paneli
+- Veri kalite skoru
+- Anomali tablosu
 - Ollama destekli Turkce AI rapor
+- AI ile secili grafik yorumu
+- AI raporu PDF olarak kaydetme
 - Veri hakkinda Turkce chat alani
 - Modern ve responsive dashboard arayuzu
 
@@ -28,11 +34,28 @@ flowchart TD
 
     C --> D[pandas ile veri okuma ve analiz]
     D --> E[Analiz JSON ciktilari]
+    D --> Q[Veri kalite skoru ve anomali tespiti]
     E --> B
+    Q --> B
+
+    B --> L[Veri temizleme istegi]
+    L --> C
+    C --> M[Eksik veri / tekrarli satir temizleme]
+    M --> E
 
     C --> F[Grafik verisi hazirlama]
     F --> G[Recharts grafik gosterimi]
     G --> B
+
+    B --> N[Otomatik grafik onerisi]
+    N --> C
+    C --> O[Grafik turu ve sutun onerisi]
+    O --> B
+
+    B --> P[Akilli grafik yorumu istegi]
+    P --> C
+    C --> R[Grafik verisinden deterministik yorum]
+    R --> B
 
     B --> H[AI Rapor veya Chat istegi]
     H --> C
@@ -40,6 +63,8 @@ flowchart TD
     I --> J[Yerel LLM llama3]
     J --> K[Turkce yorum / rapor / cevap]
     K --> B
+
+    B --> S[AI raporu PDF olarak kaydetme]
 ```
 
 ## Girdiler ve Ciktilar
@@ -57,21 +82,30 @@ flowchart TD
 - Kullanici sorusu:
   - Ornek: `Bu veride en onemli trend ne?`
   - Ornek: `Hangi kategori daha iyi performans gosteriyor?`
+- Veri temizleme islemi:
+  - Eksik verileri doldurma
+  - Eksik satirlari silme
+  - Tekrarli satirlari silme
 
 ### Ciktilar
 
 - Veri on izlemesi:
-  - Ilk 100 kayit tablo olarak gosterilir.
+  - Ilk 500 kayit tablo olarak gosterilir.
 - Otomatik analiz:
   - Satir sayisi
   - Sutun sayisi
   - Eksik veri sayisi
+  - Tekrarli satir sayisi
+  - Veri kalite skoru
+  - Anomali kayitlari
   - Sayisal sutunlar
   - Kategorik sutunlar
   - Ortalama, minimum, maksimum, medyan ve standart sapma
 - Grafikler:
   - Secilen sutunlara gore Recharts ile gorsellestirme
   - Sayisal sutunlar icin korelasyon heatmap
+  - Veri tiplerine gore otomatik grafik onerisi
+  - Secili grafik icin hesaplanan akilli yorum
 - AI rapor:
   - Veri ozeti
   - Onemli bulgular
@@ -80,6 +114,7 @@ flowchart TD
   - Riskler
   - Oneriler
   - Sonuc
+  - Tarayici uzerinden PDF olarak kaydetme
 - Chat cevabi:
   - Kullanici sorusuna Ollama tarafindan uretilen Turkce yanit
 
@@ -177,11 +212,16 @@ Uygulamayi hizlica test etmek icin bu dosyayi yukleyebilirsiniz.
 - `POST /upload`: CSV veya Excel dosyasi yukler.
 - `GET /analyze`: Yuklenen veri icin otomatik analiz dondurur.
 - `GET /charts`: Secilen grafik turu ve sutunlara gore grafik verisi dondurur.
+- `GET /suggest-chart`: Veri tiplerine gore otomatik grafik onerisi dondurur.
+- `POST /clean`: Secilen yonteme gore veri temizleme islemi uygular.
 - `POST /report`: Ollama ile Turkce AI rapor uretir.
 - `POST /ask`: Kullanici sorusunu veri baglami ile Ollama'ya gonderir.
+- `POST /chart-comment`: Secili grafik icin grafik verisine dayali Turkce yorum uretir.
+- `POST /warmup`: Secilen Ollama modelini arka planda hazirlar.
 
 ## Notlar
 
 - AI rapor ve chat ozellikleri icin Ollama servisinin calisiyor olmasi gerekir.
 - `llama3` ilk calistirmada yavas yanit verebilir.
+- `llama3` 8B oldugu icin CPU uzerinde yavas yanit verebilir. Daha hizli AI yanitlari icin daha kucuk bir yerel Ollama modeli yuklenip ust bardaki model alanina yazilabilir. Ornek: `tinyllama`.
 - Ollama kapaliysa uygulama su hatayi dondurur: `Ollama calismiyor. Lutfen 'ollama serve' calistirin.`
