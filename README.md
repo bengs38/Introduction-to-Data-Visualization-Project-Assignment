@@ -1,0 +1,163 @@
+# Akilli Veri Analiz Asistani
+
+CSV ve Excel dosyalarini analiz eden, grafiklerle gorsellestiren ve Ollama uzerinden yerel LLM ile Turkce yorumlar uretebilen modern bir veri analizi web uygulamasidir. Proje, veri gorsellestirme dersi kapsaminda React, FastAPI, pandas ve Recharts kullanilarak gelistirilmistir.
+
+## Kisa Tanim
+
+Kullanici bir veri dosyasi yukler. Backend dosyayi pandas ile analiz eder, frontend veriyi tablo ve grafik olarak gosterir. Kullanici isterse Ollama uzerinden AI rapor olusturabilir veya veri hakkinda sohbet alanindan soru sorabilir.
+
+## Temel Ozellikler
+
+- CSV, XLS ve XLSX dosyasi yukleme
+- Yuklenen veriyi tablo olarak gosterme
+- Satir, sutun, eksik veri ve sayisal sutun kartlari
+- Ortalama, minimum, maksimum, medyan ve standart sapma hesaplama
+- Bar, line, pie, scatter grafikler
+- Korelasyon heatmap
+- Grafik icin kullanici kontrollu sutun secimi
+- Ollama destekli Turkce AI rapor
+- Veri hakkinda Turkce chat alani
+- Modern ve responsive dashboard arayuzu
+
+## Mimari
+
+```mermaid
+flowchart LR
+    A[Kullanici] --> B[React + Vite Frontend]
+    B -->|CSV / Excel yukleme| C[FastAPI Backend]
+    C --> D[pandas / numpy analiz]
+    C --> E[Grafik verisi JSON]
+    C -->|Prompt| F[Ollama API]
+    F -->|Turkce AI yanit| C
+    C -->|Analiz, tablo, grafik, rapor| B
+    B --> A
+```
+
+## Girdiler ve Ciktilar
+
+### Girdiler
+
+- Veri dosyasi: `.csv`, `.xls`, `.xlsx`
+- Grafik secimleri:
+  - Grafik turu: bar, line, pie, scatter, heatmap
+  - X sutunu
+  - Y sutunu
+- Ollama model adi:
+  - Varsayilan: `llama3`
+  - Ornek: `llama3:latest`, `mistral`, `gemma`
+- Kullanici sorusu:
+  - Ornek: `Bu veride en onemli trend ne?`
+  - Ornek: `Hangi kategori daha iyi performans gosteriyor?`
+
+### Ciktilar
+
+- Veri on izlemesi:
+  - Ilk 100 kayit tablo olarak gosterilir.
+- Otomatik analiz:
+  - Satir sayisi
+  - Sutun sayisi
+  - Eksik veri sayisi
+  - Sayisal sutunlar
+  - Kategorik sutunlar
+  - Ortalama, minimum, maksimum, medyan ve standart sapma
+- Grafikler:
+  - Secilen sutunlara gore Recharts ile gorsellestirme
+  - Sayisal sutunlar icin korelasyon heatmap
+- AI rapor:
+  - Veri ozeti
+  - Onemli bulgular
+  - Trend analizi
+  - Anomali ve eksik veri analizi
+  - Riskler
+  - Oneriler
+  - Sonuc
+- Chat cevabi:
+  - Kullanici sorusuna Ollama tarafindan uretilen Turkce yanit
+
+## Kullanilan Teknolojiler
+
+- Frontend: React, Vite
+- Stil: Tailwind CSS
+- Grafikler: Recharts
+- Backend: Python FastAPI
+- Veri isleme: pandas, numpy, openpyxl
+- LLM: Ollama API
+- Baslatici: Python, keyboard, psutil
+
+## Kurulum
+
+### 1. Ollama
+
+Ollama servisini baslatin:
+
+```powershell
+ollama serve
+```
+
+Varsayilan modeli indirin:
+
+```powershell
+ollama run llama3
+```
+
+### 2. Backend
+
+```powershell
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Backend adresi:
+
+```text
+http://localhost:8000
+```
+
+### 3. Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend adresi:
+
+```text
+http://localhost:5173
+```
+
+## F8 ile Hizli Baslatma
+
+Windows icin eklenen baslatici script:
+
+```powershell
+py start_with_f8.py
+```
+
+Script calisirken `F8` tusuna basildiginda backend ve frontend baslatilir, ardindan tarayici `http://localhost:5173` adresinde acilir.
+
+## Ornek Veri
+
+Projede teknoloji satis verisi iceren ornek CSV bulunur:
+
+```text
+sample_data/teknoloji_satislari.csv
+```
+
+Uygulamayi hizlica test etmek icin bu dosyayi yukleyebilirsiniz.
+
+## API Uclari
+
+- `POST /upload`: CSV veya Excel dosyasi yukler.
+- `GET /analyze`: Yuklenen veri icin otomatik analiz dondurur.
+- `GET /charts`: Secilen grafik turu ve sutunlara gore grafik verisi dondurur.
+- `POST /report`: Ollama ile Turkce AI rapor uretir.
+- `POST /ask`: Kullanici sorusunu veri baglami ile Ollama'ya gonderir.
+
+## Notlar
+
+- AI rapor ve chat ozellikleri icin Ollama servisinin calisiyor olmasi gerekir.
+- `llama3` ilk calistirmada yavas yanit verebilir.
+- Ollama kapaliysa uygulama su hatayi dondurur: `Ollama calismiyor. Lutfen 'ollama serve' calistirin.`

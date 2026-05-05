@@ -1,0 +1,15 @@
+requests
+pyperclip
+pynput
+pyautogui
+sympy
+Pillow
+PyMuPDF
+fastapi
+uvicorn[standard]
+python-multipart
+pandas
+numpy
+openpyxl
+keyboard
+psutil

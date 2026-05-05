@@ -1,0 +1,19 @@
+Ay,Kategori,Urun,Satis_Adedi,Gelir_TL,Maliyet_TL,Musteri_Puani,Iade_Orani,Reklam_Harcamasi_TL
+Ocak,Laptop,Ultrabook X1,120,2400000,1680000,4.6,0.03,180000
+Ocak,Telefon,Smart Z,310,2790000,1953000,4.4,0.05,220000
+Ocak,Aksesuar,Kablosuz Kulaklik,520,780000,390000,4.2,0.04,90000
+Subat,Laptop,Ultrabook X1,132,2640000,1848000,4.7,0.02,190000
+Subat,Telefon,Smart Z,295,2655000,1858500,4.3,0.06,210000
+Subat,Aksesuar,Kablosuz Kulaklik,610,915000,457500,4.1,0.05,100000
+Mart,Laptop,GamePro 15,98,2450000,1764000,4.5,0.04,210000
+Mart,Telefon,Smart Z,340,3060000,2142000,4.5,0.04,230000
+Mart,Aksesuar,Akilli Saat,260,1040000,624000,4.0,0.07,120000
+Nisan,Laptop,GamePro 15,115,2875000,2070000,4.6,0.03,240000
+Nisan,Telefon,Smart Max,280,3920000,2744000,4.8,0.02,260000
+Nisan,Aksesuar,Akilli Saat,310,1240000,744000,4.2,0.06,130000
+Mayis,Laptop,CreatorBook,88,2200000,1540000,4.7,0.02,200000
+Mayis,Telefon,Smart Max,325,4550000,3185000,4.7,0.03,280000
+Mayis,Aksesuar,Kablosuz Kulaklik,690,1035000,517500,4.3,0.04,110000
+Haziran,Laptop,CreatorBook,104,2600000,1820000,4.8,0.02,220000
+Haziran,Telefon,Smart Max,360,5040000,3528000,4.6,0.04,300000
+Haziran,Aksesuar,Akilli Saat,355,1420000,852000,4.1,0.05,145000
