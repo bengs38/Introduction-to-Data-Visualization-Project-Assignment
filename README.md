@@ -22,15 +22,24 @@ Kullanici bir veri dosyasi yukler. Backend dosyayi pandas ile analiz eder, front
 ## Mimari
 
 ```mermaid
-flowchart LR
-    A[Kullanici] --> B[React + Vite Frontend]
-    B -->|CSV / Excel yukleme| C[FastAPI Backend]
-    C --> D[pandas / numpy analiz]
-    C --> E[Grafik verisi JSON]
-    C -->|Prompt| F[Ollama API]
-    F -->|Turkce AI yanit| C
-    C -->|Analiz, tablo, grafik, rapor| B
-    B --> A
+flowchart TD
+    A[Kullanici CSV veya Excel dosyasi yukler] --> B[React Frontend]
+    B --> C[FastAPI Backend]
+
+    C --> D[pandas ile veri okuma ve analiz]
+    D --> E[Analiz JSON ciktilari]
+    E --> B
+
+    C --> F[Grafik verisi hazirlama]
+    F --> G[Recharts grafik gosterimi]
+    G --> B
+
+    B --> H[AI Rapor veya Chat istegi]
+    H --> C
+    C --> I[Ollama API localhost:11434/api/generate]
+    I --> J[Yerel LLM llama3]
+    J --> K[Turkce yorum / rapor / cevap]
+    K --> B
 ```
 
 ## Girdiler ve Ciktilar
